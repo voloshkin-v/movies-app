@@ -77,7 +77,7 @@ const MovieDetails = ({
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
 		};
-	}, []);
+	}, [onCloseMovie]);
 
 	const handleAddClick = () => {
 		const watchedMovie = {
