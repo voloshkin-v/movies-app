@@ -78,7 +78,7 @@ const Star = ({ onRate, full, onEnter, onLeave, color, size }: StarProps) => {
 const StarRating = ({
 	maxRating = 5,
 	color = '#fcc419',
-	size = 25,
+	size = 24,
 	className = '',
 	messages = [],
 	defaultRating = 0,

@@ -8,27 +8,36 @@ import StarRating from './StarRating';
 interface MovieDetailsProps {
 	selectedMovie: string;
 	onCloseMovie: () => void;
+	onAddMovie: (watchedMovie: WatchedMovie) => void;
+	watchedMovies: WatchedMovie[];
 }
 
-const MovieDetails = ({ selectedMovie, onCloseMovie }: MovieDetailsProps) => {
-	const [isLoading, setIsLoading] = useState(true);
+const MovieDetails = ({
+	selectedMovie,
+	onCloseMovie,
+	onAddMovie,
+	watchedMovies,
+}: MovieDetailsProps) => {
 	const [movie, setMovie] = useState<MovieDetails>({} as MovieDetails);
-	const [rating, setRating] = useState<null | number>(null);
+	const [userRating, setUserRating] = useState<number>(0);
 
 	const {
-		Title,
-		Year,
-		Genre,
-		Poster,
-		Released,
-		Runtime,
+		Title: title,
+		Year: year,
+		Genre: genre,
+		Poster: poster,
+		Released: released,
+		Runtime: runtime,
 		imdbRating,
-		Actors,
-		Director,
-		Plot,
+		Actors: actors,
+		Director: director,
+		Plot: plot,
+		imdbID,
 	} = movie;
 
-	console.log(Title);
+	const currentWatchedMovie = watchedMovies.find(
+		(movieItem) => movieItem.imdbID === imdbID
+	);
 
 	useEffect(() => {
 		const getMovieDetails = async () => {
@@ -37,16 +46,55 @@ const MovieDetails = ({ selectedMovie, onCloseMovie }: MovieDetailsProps) => {
 			);
 
 			const data = await response.json();
-			setIsLoading(false);
-			setMovie(data);
 
-			console.log(data);
+			setMovie(data);
 		};
 
 		getMovieDetails();
 	}, [selectedMovie]);
 
-	if (isLoading) {
+	useEffect(() => {
+		if (!title) return;
+
+		document.title = `Movie | ${title}`;
+
+		return () => {
+			document.title = 'usePopcorn';
+		};
+	}, [title]);
+
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.code !== 'Escape') {
+				return;
+			}
+
+			onCloseMovie();
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+		};
+	}, []);
+
+	const handleAddClick = () => {
+		const watchedMovie = {
+			imdbID,
+			Title: title,
+			Year: year,
+			Poster: poster,
+			runtime: parseInt(runtime) ? parseInt(runtime) : 0,
+			imdbRating: +imdbRating ? +imdbRating : 0,
+			userRating,
+		};
+
+		onCloseMovie();
+		onAddMovie(watchedMovie);
+	};
+
+	if (!Object.keys(movie).length) {
 		return <Loader />;
 	}
 
@@ -56,13 +104,17 @@ const MovieDetails = ({ selectedMovie, onCloseMovie }: MovieDetailsProps) => {
 				<button onClick={onCloseMovie} className="btn-back">
 					←
 				</button>
-				<img src={Poster} alt={`Poster of ${Title} movie`} />
+
+				<div className="image">
+					<img src={poster} alt={`Poster of ${title} movie`} />
+				</div>
+
 				<div className="details-overview">
-					<h2>{Title}</h2>
+					<h2>{year}</h2>
 					<p>
-						{Released} • {Runtime}
+						{released} &bull; {runtime}
 					</p>
-					<p>{Genre}</p>
+					<p>{genre}</p>
 					<p>
 						<span>⭐️</span> {imdbRating} IMDb rating
 					</p>
@@ -71,12 +123,34 @@ const MovieDetails = ({ selectedMovie, onCloseMovie }: MovieDetailsProps) => {
 
 			<section>
 				<div className="rating">
-					<StarRating onSetRating={setRating} maxRating={10} />
+					{currentWatchedMovie ? (
+						<p>
+							The movie has been added to the list. User rating:{' '}
+							{currentWatchedMovie.userRating}
+						</p>
+					) : (
+						<>
+							<StarRating
+								onSetRating={setUserRating}
+								maxRating={10}
+							/>
+
+							{userRating !== 0 && (
+								<button
+									className="btn-add"
+									onClick={handleAddClick}
+								>
+									+ Add to list
+								</button>
+							)}
+						</>
+					)}
+
 					<p>
-						<em>{Plot}</em>
+						<em>{plot}</em>
 					</p>
-					<p>Starring: {Actors}</p>
-					<p>Directed by {Director}</p>
+					<p>Starring: {actors}</p>
+					<p>Directed by {director}</p>
 				</div>
 			</section>
 		</div>

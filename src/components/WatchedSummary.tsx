@@ -1,10 +1,8 @@
-import React from 'react';
+const average = (arr: number[]) => {
+	const num = arr.reduce((acc, cur, i, arr) => acc + cur / arr.length, 0);
 
-const average = (arr: any) =>
-	arr.reduce(
-		(acc: any, cur: any, i: any, arr: any) => acc + cur / arr.length,
-		0
-	);
+	return num % 1 === 0 ? num : num.toFixed(2);
+};
 
 interface WatchedSummaryProps {
 	watched: WatchedMovie[];

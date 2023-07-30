@@ -2,26 +2,39 @@ import React from 'react';
 
 interface WatchedMovieProps {
 	movie: WatchedMovie;
+	onDeleteMovie: (id: string) => void;
 }
 
-const WatchedMovie = ({ movie }: WatchedMovieProps) => {
+const WatchedMovie = ({ movie, onDeleteMovie }: WatchedMovieProps) => {
 	return (
 		<li>
-			<img src={movie.Poster} alt={`${movie.Title} poster`} />
-			<h3>{movie.Title}</h3>
+			{movie.Poster !== 'N/A' && (
+				<img src={movie.Poster} alt={`${movie.Title} poster`} />
+			)}
+
 			<div>
-				<p>
-					<span>⭐️</span>
-					<span>{movie.imdbRating}</span>
-				</p>
-				<p>
-					<span>🌟</span>
-					<span>{movie.userRating}</span>
-				</p>
-				<p>
-					<span>⏳</span>
-					<span>{movie.runtime} min</span>
-				</p>
+				<h3>{movie.Title}</h3>
+				<div className="stats">
+					<p>
+						<span>⭐️</span>
+						<span>{movie.imdbRating}</span>
+					</p>
+					<p>
+						<span>🌟</span>
+						<span>{movie.userRating}</span>
+					</p>
+					<p>
+						<span>⏳</span>
+						<span>{movie.runtime} min</span>
+					</p>
+
+					<button
+						className="btn-delete"
+						onClick={() => onDeleteMovie(movie.imdbID)}
+					>
+						X
+					</button>
+				</div>
 			</div>
 		</li>
 	);

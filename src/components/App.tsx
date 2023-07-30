@@ -15,60 +15,19 @@ import MovieDetails from './MovieDetails';
 
 import { Response, ResponseStatus } from '../types/response';
 
-const tempMovieData = [
-	{
-		imdbID: 'tt1375666',
-		Title: 'Inception',
-		Year: '2010',
-		Poster: 'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg',
-	},
-	{
-		imdbID: 'tt0133093',
-		Title: 'The Matrix',
-		Year: '1999',
-		Poster: 'https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_SX300.jpg',
-	},
-	{
-		imdbID: 'tt6751668',
-		Title: 'Parasite',
-		Year: '2019',
-		Poster: 'https://m.media-amazon.com/images/M/MV5BYWZjMjk3ZTItODQ2ZC00NTY5LWE0ZDYtZTI3MjcwN2Q5NTVkXkEyXkFqcGdeQXVyODk4OTc3MTY@._V1_SX300.jpg',
-	},
-];
-
-const tempWatchedData = [
-	{
-		imdbID: 'tt1375666',
-		Title: 'Inception',
-		Year: '2010',
-		Poster: 'https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg',
-		runtime: 148,
-		imdbRating: 8.8,
-		userRating: 10,
-	},
-	{
-		imdbID: 'tt0088763',
-		Title: 'Back to the Future',
-		Year: '1985',
-		Poster: 'https://m.media-amazon.com/images/M/MV5BZmU0M2Y1OGUtZjIxNi00ZjBkLTg1MjgtOWIyNThiZWIwYjRiXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg',
-		runtime: 116,
-		imdbRating: 8.5,
-		userRating: 9,
-	},
-];
-
 export const KEY = 'aff18a0c';
 
 const App = () => {
 	const [movies, setMovies] = useState<Movie[]>([]);
 	const [watched, setWatched] = useState<WatchedMovie[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState('');
-	const [query, setQuery] = useState('test');
+	const [query, setQuery] = useState('tse');
 	const [selectedId, setSelectedId] = useState<null | string>(null);
 
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState('');
+
 	useEffect(() => {
-		const fetchMoview = async () => {
+		const fetchMovie = async () => {
 			try {
 				setIsLoading(true);
 				setError('');
@@ -104,7 +63,7 @@ const App = () => {
 			return;
 		}
 
-		fetchMoview();
+		fetchMovie();
 	}, [query]);
 
 	const handleSelectMovie = (id: string) => {
@@ -121,10 +80,18 @@ const App = () => {
 		setSelectedId(null);
 	};
 
+	const handleAddMovie = (watchedMovie: WatchedMovie) => {
+		setWatched((watched) => [...watched, watchedMovie]);
+	};
+
+	const handleDelemeMovie = (id: string) => {
+		setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
+	};
+
 	return (
 		<>
 			<NavBar>
-				<Search onSetQuery={setQuery} />
+				<Search query={query} onSetQuery={setQuery} />
 				<NumResult movies={movies} />
 			</NavBar>
 
@@ -132,7 +99,12 @@ const App = () => {
 				<Box>
 					{isLoading && <Loader />}
 					{error && <ErrorMessage message={error} />}
-					{!isLoading && !error && (
+
+					{!isLoading && !error && movies.length === 0 && (
+						<Loader>Use the search to find movies 🔎</Loader>
+					)}
+
+					{!isLoading && !error && movies.length > 0 && (
 						<MovieList
 							movies={movies}
 							selectedMovie={selectedId}
@@ -147,11 +119,18 @@ const App = () => {
 							key={selectedId}
 							selectedMovie={selectedId}
 							onCloseMovie={handleCloseMovie}
+							onAddMovie={handleAddMovie}
+							watchedMovies={watched}
 						/>
 					) : (
 						<>
 							<WatchedSummary watched={watched} />
-							<WatchedMovieList watched={watched} />
+							{watched.length > 0 && (
+								<WatchedMovieList
+									watched={watched}
+									onDeleteMovie={handleDelemeMovie}
+								/>
+							)}
 						</>
 					)}
 				</Box>

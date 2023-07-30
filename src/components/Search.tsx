@@ -1,29 +1,41 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 
 import debounce from 'lodash.debounce';
 
 interface SearchProps {
-	onSetQuery: (q: string) => void;
+	query: string;
+	onSetQuery: (query: string) => void;
 }
 
-const Search = ({ onSetQuery }: SearchProps) => {
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+const Search = ({ query, onSetQuery }: SearchProps) => {
+	const [value, setValue] = useState(query);
+	const length = value.length;
+
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { value } = e.target;
-
-		console.log(value);
-
-		onSetQuery(value);
+		setValue(value);
+		handleDebounedQuery(value);
 	};
 
-	const debouncedOnChange = debounce(handleChange, 500);
+	const handleDebounedQuery = useCallback(
+		debounce((query: string) => {
+			onSetQuery(query);
+		}, 500),
+		[]
+	);
 
 	return (
-		<input
-			className="search"
-			type="text"
-			placeholder="Search movies..."
-			onChange={debouncedOnChange}
-		/>
+		<div className="search-field">
+			<input
+				className={`search${
+					length > 0 && length < 3 ? ' search-invalid' : ''
+				}`}
+				type="text"
+				placeholder="Search movies..."
+				value={value}
+				onChange={handleInputChange}
+			/>
+		</div>
 	);
 };
 
