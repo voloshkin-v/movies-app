@@ -19,8 +19,11 @@ export const KEY = 'aff18a0c';
 
 const App = () => {
 	const [movies, setMovies] = useState<Movie[]>([]);
-	const [watched, setWatched] = useState<WatchedMovie[]>([]);
-	const [query, setQuery] = useState('tse');
+	const [watched, setWatched] = useState<WatchedMovie[]>(() => {
+		const storedValue = localStorage.getItem('movies');
+		return JSON.parse(storedValue!) || [];
+	});
+	const [query, setQuery] = useState('');
 	const [selectedId, setSelectedId] = useState<null | string>(null);
 
 	const [isLoading, setIsLoading] = useState(false);
@@ -63,8 +66,13 @@ const App = () => {
 			return;
 		}
 
+		handleCloseMovie();
 		fetchMovie();
 	}, [query]);
+
+	useEffect(() => {
+		localStorage.setItem('movies', JSON.stringify(watched));
+	}, [watched]);
 
 	const handleSelectMovie = (id: string) => {
 		if (selectedId === id) {
@@ -84,7 +92,7 @@ const App = () => {
 		setWatched((watched) => [...watched, watchedMovie]);
 	};
 
-	const handleDelemeMovie = (id: string) => {
+	const handleDeleteMovie = (id: string) => {
 		setWatched((watched) => watched.filter((movie) => movie.imdbID !== id));
 	};
 
@@ -128,7 +136,7 @@ const App = () => {
 							{watched.length > 0 && (
 								<WatchedMovieList
 									watched={watched}
-									onDeleteMovie={handleDelemeMovie}
+									onDeleteMovie={handleDeleteMovie}
 								/>
 							)}
 						</>
