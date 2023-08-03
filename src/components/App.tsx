@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { useMovies } from '../hooks/useMovies';
+import { useLocalStorageState } from '../hooks/useLocalStorageState';
 
 import NavBar from '../layouts/NavBar';
 import Main from '../layouts/Main';
@@ -21,15 +22,7 @@ const App = () => {
 	const [query, setQuery] = useState('');
 	const [selectedId, setSelectedId] = useState<null | string>(null);
 	const { movies, isLoading, error } = useMovies(query);
-
-	const [watched, setWatched] = useState<WatchedMovie[]>(() => {
-		const storedValue = localStorage.getItem('movies');
-		return JSON.parse(storedValue!) || [];
-	});
-
-	useEffect(() => {
-		localStorage.setItem('movies', JSON.stringify(watched));
-	}, [watched]);
+	const [watched, setWatched] = useLocalStorageState([], 'movies');
 
 	const handleCloseMovie = () => {
 		setSelectedId(null);
