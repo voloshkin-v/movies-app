@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { KEY } from './App';
 
@@ -20,6 +20,8 @@ const MovieDetails = ({
 }: MovieDetailsProps) => {
 	const [movie, setMovie] = useState<MovieDetails>({} as MovieDetails);
 	const [userRating, setUserRating] = useState<number>(0);
+
+	const countRef = useRef(0);
 
 	const {
 		Title: title,
@@ -79,6 +81,14 @@ const MovieDetails = ({
 		};
 	}, [onCloseMovie]);
 
+	useEffect(() => {
+		if (!userRating) {
+			return;
+		}
+
+		countRef.current++;
+	}, [userRating]);
+
 	const handleAddClick = () => {
 		const watchedMovie = {
 			imdbID,
@@ -88,6 +98,7 @@ const MovieDetails = ({
 			runtime: parseInt(runtime) ? parseInt(runtime) : 0,
 			imdbRating: +imdbRating ? +imdbRating : 0,
 			userRating,
+			countRatingDecisions: countRef.current,
 		};
 
 		onCloseMovie();

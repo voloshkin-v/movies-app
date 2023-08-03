@@ -22,5 +22,6 @@ declare global {
 		runtime: number;
 		imdbRating: number;
 		userRating: number;
+		countRatingDecisions: number;
 	}
 }

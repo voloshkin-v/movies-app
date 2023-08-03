@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+
+import { useMovies } from '../hooks/useMovies';
 
 import NavBar from '../layouts/NavBar';
 import Main from '../layouts/Main';
@@ -13,66 +15,25 @@ import Loader from './Loader';
 import ErrorMessage from './ErrorMessage';
 import MovieDetails from './MovieDetails';
 
-import { Response, ResponseStatus } from '../types/response';
-
 export const KEY = 'aff18a0c';
 
 const App = () => {
-	const [movies, setMovies] = useState<Movie[]>([]);
+	const [query, setQuery] = useState('');
+	const [selectedId, setSelectedId] = useState<null | string>(null);
+	const { movies, isLoading, error } = useMovies(query);
+
 	const [watched, setWatched] = useState<WatchedMovie[]>(() => {
 		const storedValue = localStorage.getItem('movies');
 		return JSON.parse(storedValue!) || [];
 	});
-	const [query, setQuery] = useState('');
-	const [selectedId, setSelectedId] = useState<null | string>(null);
-
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState('');
-
-	useEffect(() => {
-		const fetchMovie = async () => {
-			try {
-				setIsLoading(true);
-				setError('');
-
-				const response = await fetch(
-					`http://www.omdbapi.com/?apikey=${KEY}&s=${query}`
-				);
-
-				if (!response.ok) {
-					throw new Error(
-						'Something went wrong with fetching movies!'
-					);
-				}
-
-				const data: Response = await response.json();
-
-				if (data.Response === ResponseStatus.FAILED) {
-					throw new Error(data.Error);
-				}
-
-				setMovies(data.Search);
-			} catch (err: any) {
-				setError(err.message);
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		if (query.length < 3) {
-			setMovies([]);
-			setError('');
-
-			return;
-		}
-
-		handleCloseMovie();
-		fetchMovie();
-	}, [query]);
 
 	useEffect(() => {
 		localStorage.setItem('movies', JSON.stringify(watched));
 	}, [watched]);
+
+	const handleCloseMovie = () => {
+		setSelectedId(null);
+	};
 
 	const handleSelectMovie = (id: string) => {
 		if (selectedId === id) {
@@ -82,10 +43,6 @@ const App = () => {
 		}
 
 		setSelectedId(id);
-	};
-
-	const handleCloseMovie = () => {
-		setSelectedId(null);
 	};
 
 	const handleAddMovie = (watchedMovie: WatchedMovie) => {
