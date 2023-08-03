@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
+import { useKey } from '../hooks/useKey';
 import debounce from 'lodash.debounce';
 
 interface SearchProps {
@@ -10,24 +11,16 @@ interface SearchProps {
 const Search = ({ query, onSetQuery }: SearchProps) => {
 	const [value, setValue] = useState(query);
 	const inputEl = useRef<HTMLInputElement>(null);
-	const length = value.length;
 
-	useEffect(() => {
-		const handleFocusInput = (e: KeyboardEvent) => {
-			if (e.code !== 'Enter' || document.activeElement === inputEl.current) {
-				return;
-			}
+	useKey('Enter', () => {
+		if (document.activeElement === inputEl.current) {
+			return;
+		}
 
-			inputEl.current?.focus();
-			setValue('');
-			onSetQuery('');
-		};
-
-		window.addEventListener('keydown', handleFocusInput);
-
-
-		return () => window.removeEventListener('keydown', handleFocusInput)
-	}, [onSetQuery]);
+		inputEl.current?.focus();
+		setValue('');
+		onSetQuery('');
+	});
 
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { value } = e.target;
@@ -47,7 +40,9 @@ const Search = ({ query, onSetQuery }: SearchProps) => {
 			<input
 				ref={inputEl}
 				className={`search${
-					length > 0 && length < 3 ? ' search-invalid' : ''
+					value.length > 0 && value.length < 3
+						? ' search-invalid'
+						: ''
 				}`}
 				type="text"
 				placeholder="Search movies..."

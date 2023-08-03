@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+import { useKey } from '../hooks/useKey';
 import { KEY } from './App';
 
 import Loader from './Loader';
@@ -20,7 +21,6 @@ const MovieDetails = ({
 }: MovieDetailsProps) => {
 	const [movie, setMovie] = useState<MovieDetails>({} as MovieDetails);
 	const [userRating, setUserRating] = useState<number>(0);
-
 	const countRef = useRef(0);
 
 	const {
@@ -40,6 +40,24 @@ const MovieDetails = ({
 	const currentWatchedMovie = watchedMovies.find(
 		(movieItem) => movieItem.imdbID === imdbID
 	);
+
+	const handleAddClick = () => {
+		const watchedMovie = {
+			imdbID,
+			Title: title,
+			Year: year,
+			Poster: poster,
+			runtime: parseInt(runtime) ? parseInt(runtime) : 0,
+			imdbRating: +imdbRating ? +imdbRating : 0,
+			userRating,
+			countRatingDecisions: countRef.current,
+		};
+
+		onCloseMovie();
+		onAddMovie(watchedMovie);
+	};
+
+	useKey('Escape', onCloseMovie);
 
 	useEffect(() => {
 		const getMovieDetails = async () => {
@@ -66,44 +84,12 @@ const MovieDetails = ({
 	}, [title]);
 
 	useEffect(() => {
-		const handleKeyDown = (e: KeyboardEvent) => {
-			if (e.code !== 'Escape') {
-				return;
-			}
-
-			onCloseMovie();
-		};
-
-		window.addEventListener('keydown', handleKeyDown);
-
-		return () => {
-			window.removeEventListener('keydown', handleKeyDown);
-		};
-	}, [onCloseMovie]);
-
-	useEffect(() => {
 		if (!userRating) {
 			return;
 		}
 
 		countRef.current++;
 	}, [userRating]);
-
-	const handleAddClick = () => {
-		const watchedMovie = {
-			imdbID,
-			Title: title,
-			Year: year,
-			Poster: poster,
-			runtime: parseInt(runtime) ? parseInt(runtime) : 0,
-			imdbRating: +imdbRating ? +imdbRating : 0,
-			userRating,
-			countRatingDecisions: countRef.current,
-		};
-
-		onCloseMovie();
-		onAddMovie(watchedMovie);
-	};
 
 	if (!Object.keys(movie).length) {
 		return <Loader />;
